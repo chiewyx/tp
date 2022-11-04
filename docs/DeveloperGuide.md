@@ -60,7 +60,7 @@ The overall architecture loosely follows the following diagram:
 ![Architecture](images/architecture.png)
 
 A few things to note about the overall architecture:
-- The UI and CommandParser class are helper classess and therefore only have dependencies and not associations
+- The UI and CommandParser class are helper classes and therefore only have dependencies and not associations
 - The Exception, List and Storage components showed above are simplified representations. In reality:
   - There are close to 20 created exceptions that extend the base DukeException class
   - For List, there are 3 specific lists we work with: UserList, ItemList and StorageList
@@ -70,8 +70,12 @@ A few things to note about the overall architecture:
 Knowing the overall architecture of the application, we cover the specifics below.
 
 ### 3.1. Duke
-Duke is the main class where Upcycle will run. Upon running it, Duke calls the Ui class to greet the user, as well as the Storage class to load any existing data into the system. 
-Afterwards, it repeatedly takes in user commands until the exit command is inputted by the user. Any user input is read by the Ui, returned to Duke and sent to the CommandParser class to be parsed. If the command is valid, it is sent to the Command class to be processed and sent back to Duke to be executed. Valid responses are sent to the Ui to be displayed to the user, and the data is stored in Storage. If not, an appropriate error is displayed instead.
+Duke is the main class where Upcycle will run. Upon running it, Duke checks if there is any data corruption in the data files first, then if there is an error in the data files, 
+it calls Ui to print the error and ask if the user wants to force reset his/her data. If yes, all data will be deleted, if no, the user has to edit it until there is no error. 
+Otherwise, they cannot use the app. If there is no error in the data files, Duke calls the Ui class to greet the user, as well as the Storage class to load any existing data into the system. 
+Afterward, it repeatedly takes in user commands until the exit command is inputted by the user. Any user input is read by the Ui, returned to Duke, and sent to the CommandParser class to be 
+parsed. If the command is valid, it is sent to the Command class to be processed and sent back to Duke to be executed. Valid responses are sent to the Ui to be displayed to the user, and the 
+data is stored in Storage. If not, an appropriate error is displayed instead.
 
 ![DukeSequence](images/DukeSequence.png)
 
@@ -120,7 +124,7 @@ The Class diagram below show how Transaction-related classes interact with each 
 attributes. Among those, `transactionId` is created by `IdGenerator`'s static method and dates are formatted by `DateParser`. Transactions are stored in `TransactionList`, which will be loaded and written on the file by `TransactionStorage` 
 (inherits from `Storage`) whenever Upcycle runs or exits. All transaction-related commands operate mainly on a list of transaction (transactionList:TransactionList)
 
-Some unimportant methods are ignored in this diagram, for example, some "get" methods
+Some unimportant methods are ignored in this diagram, for example, some "get" methods, and some in [Storage class](#37-storage-component)
 
 ![TransactionClassDiagram](images/TransactionClassDiagram.png)
 
@@ -143,6 +147,7 @@ Below, we detail the design of the UI class with a class diagram
 ### 3.7. Storage component
 
 Upcycle has three separate Storage class, dedicated for three types of object: ```UserStorage```, ```ItemStorage```, and ```TransactionStorage```. All of these inherit from an abstract class called ```Storage```. 
+Moreover, we also `StorageManager` class as a bridge between main class `Duke` and other storage, which handles data corruption in the files, writes data/loads data from/to all three lists.
 The following diagrams show more details about Storage classes: 
 
 ![StorageClassDiagram](images/StorageClassDiagram.png)
@@ -150,21 +155,7 @@ The following diagrams show more details about Storage classes:
 Upcycle stores the user's data, including the user list, item list, and transaction list in three files ```user.txt```, ```item.txt```, and ```transaction.txt```, respectively.
 The data will be loaded when running the program and will be written to the files after each operation. These files can be found in ```data``` folder in the same directory as the folder containing project root.
 
-If Duke detects a change the potentially cause errors in the files, it will print out where the error is and its reason. It also asks if user wants to try re-edit it or let Duke force reset all list, for example:
-```
-____________________________________________________________
-The ITEM files has been corrupted at line 1
-Reason: Category index is invalid
-Please use list-categories to check the index of your chosen categories
-Please try to fix your data in your files before running the app again
-If you fix it correctly, you will see a greeting message in the next run
-If you cannot fix it, you will see this message again. Please delete the entire data folder
-to avoid errors, which also mean that all your data will be gone forever
-In that case, we will create three brand-new lists for your users, items, and transactions
-REMEMBER that all files in data folder must be edited correctly
-Do you want to force reset all files and restart? y or n
-____________________________________________________________
-```
+If Duke detects a change that potentially cause errors in the files, it will print out where the error is and its reason. It also asks if user wants to try re-edit it or let Duke force reset all list, for example:
 
 ## 4. Implementation
 
@@ -288,15 +279,15 @@ Step 4: The UserList is iterated through to check for Users that match the provi
 
 The following sequence diagram models the operation: PENDING DIAGRAM
 
-### 4.1.7. View User Debt
+### 4.1.7. View User Loss
 
 >This feature allows users to find user debt by summing all moneyTransacted in all the Transactions in which the User is a Borrower through the command ```view-user-debt```.
 
 Given below is an example usage scenario and how the command mechanism behaves at each step.
 
-Step 1: The user types in the command ```view-user-debt /u [username]``` in the command line. The CommandParser class checks if the command is valid through the createCommand() method.
+Step 1: The user types in the command ```view-user-loss /u [username]``` in the command line. The CommandParser class checks if the command is valid through the createCommand() method.
 
-Step 2: Duke will receive the ```ViewUserDebtCommand``` and execute it.
+Step 2: Duke will receive the ```ViewUserLossCommand``` and execute it.
 
 Step 3: ViewUserDebtCommand will check for the delimiter "/u". If it is not present, an exception is thrown. Else the command is executed.
 
@@ -309,6 +300,28 @@ Step 6: `getTotalMoneyTransacted()` is run on the new TransactionList. The money
 Step 7: The total User debt is printed by `Ui.printResponse()`.
 
 The following sequence diagram models the operation: PENDING DIAGRAM
+
+### 4.1.8. View User Gain
+
+>This feature allows users to find user debt by summing all moneyTransacted in all the Transactions in which the User is a Borrower through the command ```view-user-debt```.
+
+Given below is an example usage scenario and how the command mechanism behaves at each step.
+
+Step 1: The user types in the command ```view-user-gain /u [username]``` in the command line. The CommandParser class checks if the command is valid through the createCommand() method.
+
+Step 2: Duke will receive the ```ViewUserGainCommand``` and execute it.
+
+Step 3: ViewUserDebtCommand will check for the delimiter "/u". If it is not present, an exception is thrown. Else the command is executed.
+
+Step 4: The UserList is iterated through to find the User with the given [username]. If none exist, a UserNotFoundException is thrown.
+
+Step 5: `getLendTransactionsByUser(username)` is run. The TransactionList is iterated through to find Transactions in which said User is the Lender. If User is Lender, the Transaction is added to a new TransactionList, which is then returned.
+
+Step 6: `getTotalMoneyTransacted()` is run on the new TransactionList. The moneyTransacted in each of the Transactions in the new TransactionList is summed together to give a return value.
+
+Step 7: The total User gain is printed by `Ui.printResponse()`.
+
+The following sequence diagram models the operation: PENDING
 
 ### 4.2. Item-related Features
 
@@ -547,7 +560,7 @@ Step 4: Once the transactionList has been completely iterated through, a message
 
 The following sequence diagram shows how the viewTransactionsByStatus operation works:
 
-![viewTransactionsByStatus](images/ViewTransactionByStatusSequence.png)
+![viewTransactionsByStatus](images/ViewTransactionsByStatusSequence.png)
 
 #### 4.3.6. Update an transaction
 
@@ -574,7 +587,7 @@ The following sequence diagram models the operation:
 #### 4.3.7. List Transaction By User
 
 > This feature allows the user to list all the Transactions in which a given User is a Borrower. 
-> - `view-tx-by-user /u [username]`: Lists down all the transactions that have been completed.
+> - `view-borrow-tx-by-user /u [username]` and `view-lend-tx-by-user /u [username]`: Lists down all the transactions in which a given user is a borrower/lender.
 
 Given below is an example usage scenario and how the command mechanism behaves at each step.
 
@@ -589,7 +602,7 @@ Step 4: If User is found, it then delegates to `TransactionList::getBorrowTransa
 Step 5: The returned TransactionList printed to the User via `Ui.printResponse()`
 
 The following sequence diagram models the operation:
-
+![ViewBorrowTxByuUser](images/ViewBorrowTxByUser.png)
 ### 4.4. Help Command
 
 >This feature allows users to see all the commands and command format required by Upcycle
@@ -673,6 +686,7 @@ staying in a particular community/hall to loan or borrow items they wish to shar
 | tx            | Transaction                |
 | UI            | User Interface             |
 | Mainstream OS | Windows, Linux, Unix, OS-X |
+| CLI           | Command Line Interface     |
 
 ...TO BE UPDATED
 
@@ -684,12 +698,12 @@ This section provides guidance to the tester to manually test Upcycle by providi
 enter into the app.
 
 There are 2 categories of test cases:
-- **Positive test cases:** follow the user guide in the sequence from 3.1 to 3.5
+- **Positive test cases:** follow the [user guide](UserGuide.md) in the sequence from 3.1 to 3.5
 - **Negative test cases:** listed below
 
 Here are the negative test cases you can test:
 - **Invalid general commands:**
-   - Empty command: ``
+   - Empty command: ` `
    - Not supported command: `cap 5.0`
 - **Invalid User-related features:**
    - Invalid `user` commands:
@@ -699,11 +713,14 @@ Here are the negative test cases you can test:
       - Missing all command arguments: `add-user`
       - Missing some command arguments: `add-user /n bui /a 20 /c`
       - Invalid age: `add-user /n bui /a twenty /c 91234567`
+      - Invalid contact (length must be 8): `add-user /n yixiang /a 20 /c 1234567`
+      - Invalid contact (only contains digits 0-9): `add-user /n yixiang /a 20 /c -1234567`
+      - Invalid age: `add-user /n yixiang /a 9 /c 12345678` (age out of range 10-10000)
    - Invalid `remove-user` commands:
       - Invalid userName: `remove-user /u tate` (tate does not exist)
       - Missing command arguments: `remove-user`
    - Invalid `view-user`/`view-user-items`/`view-user-loss`/`view-user-gain` commands:
-      - Invalid userName ((tate does not exist):
+      - Invalid userName (tate does not exist):
          - `view-user /u tate`
          - `view-user-items /u tate`
          - `view-user-loss /u tate`
@@ -715,9 +732,9 @@ Here are the negative test cases you can test:
       - Missing item prefix: `item`
       - Wrong item prefix: `destroy-item`
    - Invalid `add-item` commands:
-      - Invalid category: `add-item /n battery /c 21 /p 3.5 /o bui`
-      - Invalid owner: `add-item /n battery /c 3 /p 3.5 /o tate` (tate does not exist)
-      - Invalid price: `add-item /n battery /c 3 /p -1 /o bui`
+      - Invalid category: `add-item /n khdsa982 /c 21 /p 3.5 /o bui`
+      - Invalid owner: `add-item /n khdsa982 /c 3 /p 3.5 /o tate` (tate does not exist)
+      - Invalid price: `add-item /n khdsa982 /c 3 /p -1 /o bui`
    - Invalid `remove-item` commands:
       - Invalid item ID: `remove-item /i 1234567` (ID 1234567 does not exist)
    - Invalid `view-item` commands:
@@ -734,20 +751,19 @@ Here are the negative test cases you can test:
       - Missing keyword: `find-item /k`
 - **Invalid Transaction-related commands:**
    - Invalid `add-tx` commands:
-      - Invalid item ID: `add-tx /i 1234567 /b winston /d 2 /c 2022-10-28`
+      - Invalid item ID: `add-tx /i 1234567 /b winston /d 2 /c 2022-10-28` (ID 1234567 does not exist)
       - Invalid borrower: `add-tx /i 99995bb2 /b tate /d 2 /c 2022-10-28`
       - Invalid duration: `add-tx /i 99995bb2 /b winston /d 1462 /c 2022-10-28` (duration must be less than 1461)
       - Invalid created date: `add-tx /i 99995bb2 /b winston /d 2 /c 28-10-2022`
    - Invalid `remove-tx` commands:
       - Invalid transaction ID: `remove-tx /t 1234567` (ID 1234567 does not exist)
    - Invalid `view-tx` commands:
-      -  Invalid transaction ID: `view-tx /t 1234567` (ID 1234567 does not exist)
+      - Invalid transaction ID: `view-tx /t 1234567` (ID 1234567 does not exist)
    - Invalid `find-tx` commands:
       - Invalid status: `find-tx /s ended`
    - Invalid `update-tx` commands:
       - Invalid transaction ID: `update-tx /t 1234567 /d 3` (ID 1234567 does not exist)
       - Invalid duration: `update-tx /t 99995bb2 /d -5`
-
-...To be updated
-
-{Give instructions on how to do a manual product testing e.g., how to load sample data to be used for testing}
+  - Invalid `view-borrow-tx-by-user`/`view-lend-tx-by-user` commands:
+      - Invalid username: `view-borrow-tx-by-user /u tate` (tate does not exist)
+      - Invalid username: `view-lend-tx-by-user /u tate` (tate does not exist)
