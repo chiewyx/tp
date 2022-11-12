@@ -1,7 +1,5 @@
 package seedu.duke.exception.message;
 
-// @@author bdthanh
-
 /**
  * A class to store the Exception Messages.
  */
@@ -32,6 +30,11 @@ public class ExceptionMessages {
     public static final String MESSAGE_PRICE_FORMAT_INVALID = "Price is a float, check your format";
     public static final String MESSAGE_PRICE_OUT_OF_RANGE =
             "Price must be in range from 0 to 10000";
+
+    public static final String MESSAGE_MONEY_TRANSACTED_OUT_OF_RANGE =
+            "Money transacted in one transaction must be in range from 0 to 15000000";
+    public static final String MESSAGE_PRICE_TOO_MANY_DECIMALS =
+            "Price must have at most 2 decimals, $0.01 is the smallest unit of price!";
     public static final String MESSAGE_SORT_MODE_INVALID = "Mode of sorting is invalid";
     public static final String MESSAGE_PRICE_BOUNDARIES_INVALID =
             "Minimum price cannot be more than maximum price";
@@ -80,10 +83,10 @@ public class ExceptionMessages {
     public static final String MESSAGE_ARGUMENT_EMPTY = "The value cannot be empty";
     public static final String MESSAGE_CONTAIN_DATA_SEPARATOR =
             "Input cannot contain | character because it can cause errors when loading data";
-    public static final String MESSAGE_USER_STORAGE_ILLEGALLY_MODIFIED = "The USER files has been corrupted at line ";
-    public static final String MESSAGE_ITEM_STORAGE_ILLEGALLY_MODIFIED = "The ITEM files has been corrupted at line ";
+    public static final String MESSAGE_USER_STORAGE_ILLEGALLY_MODIFIED = "The USER file has been corrupted at line ";
+    public static final String MESSAGE_ITEM_STORAGE_ILLEGALLY_MODIFIED = "The ITEM file has been corrupted at line ";
     public static final String MESSAGE_TRANSACTION_STORAGE_ILLEGALLY_MODIFIED =
-            "The TRANSACTION files has been corrupted at line ";
+            "The TRANSACTION file has been corrupted at line ";
     public static final String MESSAGE_FILES_ILLEGALLY_DELETED = "One or more files has been deleted\n";
     public static final String MESSAGE_TO_FIX_FILES =
             "Please try to fix your data in your files before running the app again\n"
@@ -91,8 +94,8 @@ public class ExceptionMessages {
                     + "If you cannot fix it, you will see this message again. Please delete the entire data folder\n"
                     + "to avoid errors, which also mean that all your data will be gone forever\n"
                     + "In that case, we will create three brand-new lists for your users, items, and transactions\n"
-                    + "REMEMBER that all files in data folder must be edited correctly\n"
-                    + "Do you want to force reset all files and restart? y or n";
+                    + "REMEMBER that all files in data folder must be edited correctly\n\n"
+                    + "Do you want to force reset all files and restart? Y or N";
     public static final String MESSAGE_EXIT_DUKE = "Exit Duke and please edit correctly...";
     public static final String MESSAGE_RESET_DUKE = "Force reset files and please restart...";
     public static final String MESSAGE_NAME_LENGTH_INVALID = "The length of name must be no more than 20 characters";
@@ -100,5 +103,5 @@ public class ExceptionMessages {
     public static final String MESSAGE_VALUE_OF_ARGS_INVALID = "The value of args for line is empty";
     public static final String MESSAGE_STORAGE_REASON = "\nReason: ";
     public static final String MESSAGE_YES_OR_NO
-            = "Please only input y or n. y for force resetting, n for self-editing";
+            = "Please only input Y or N. Y for force resetting, N for self-editing (lower case is accepted)";
 }
